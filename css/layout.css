@@ -5,7 +5,7 @@
 
 .app-container {
   display: grid;
-  grid-template-columns: var(--sidebar-width) 1fr;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
   grid-template-rows: var(--header-height) 1fr var(--statusbar-height);
   grid-template-areas:
     "header header"
@@ -99,6 +99,7 @@
   z-index: var(--z-sidebar);
   font-family: var(--font-mono);
   font-size: var(--text-sm);
+  min-width: 0;
 }
 
 .zoom-controls {

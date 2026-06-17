@@ -191,23 +191,38 @@ class ConnectionManager {
   }
 
   _getPortPosition(nodeId, type) {
+    const node = this.canvas.getNode(nodeId);
+    if (!node) return null;
+
     const nodeEl = document.querySelector(`#canvas-inner #${nodeId}`);
     if (!nodeEl) return null;
 
-    const portClass = type === 'input' ? '.port-input' : '.port-output';
-    const portEl = nodeEl.querySelector(portClass);
-    if (!portEl) return null;
-
-    // Get logical position inside canvas-inner
-    const innerRect = document.getElementById('canvas-inner').getBoundingClientRect();
-    const portRect = portEl.getBoundingClientRect();
-    
-    const scale = window.app.canvasManager.scale;
-
-    return {
-      x: (portRect.left - innerRect.left + (portRect.width / 2)) / scale,
-      y: (portRect.top - innerRect.top + (portRect.height / 2)) / scale
+    // Default sizes for node categories to fallback on if not yet rendered/measured
+    const defaultSizes = {
+      olt: { w: 180, h: 72 },
+      sfp: { w: 130, h: 72 },
+      ont: { w: 150, h: 72 },
+      splitter: { w: 140, h: 72 },
+      odp: { w: 150, h: 72 },
+      fiber_cable: { w: 140, h: 72 },
+      drop_cable: { w: 140, h: 72 },
+      connector: { w: 125, h: 72 }
     };
+    
+    const w = nodeEl.offsetWidth || defaultSizes[node.type]?.w || 140;
+    const h = nodeEl.offsetHeight || defaultSizes[node.type]?.h || 72;
+
+    if (type === 'input') {
+      return {
+        x: node.x,
+        y: node.y + h / 2
+      };
+    } else {
+      return {
+        x: node.x + w,
+        y: node.y + h / 2
+      };
+    }
   }
 
   _createBezierPath(x1, y1, x2, y2) {
