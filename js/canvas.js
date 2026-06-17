@@ -537,10 +537,12 @@ class CanvasManager {
     const sourceNode = this.getNode(sourceId);
     if (!sourceNode) return false;
 
-    let maxConnections = 1; // Default for active lines, connectors, cables, SFP, OLT
+    let maxConnections = 1; // Default for active lines, connectors, cables, SFP
     if (sourceNode.type === 'splitter' || sourceNode.type === 'odp') {
       const ratio = sourceNode.properties.ratio || '1:8';
       maxConnections = parseInt(ratio.split(':')[1]) || 8;
+    } else if (sourceNode.type === 'olt') {
+      maxConnections = Infinity; // OLT can have multiple SFPs connected
     }
 
     const currentOutgoing = this.connections.filter(c => c.sourceId === sourceId).length;
