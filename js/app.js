@@ -834,6 +834,66 @@ class FTTHSimulator {
       cleanup();
     }, 500); // 500ms to ensure DOM updates and images/styles are flushed
   }
+
+  showToast(message, type = 'error') {
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+      toastContainer = document.createElement('div');
+      toastContainer.id = 'toast-container';
+      toastContainer.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+      `;
+      document.body.appendChild(toastContainer);
+    }
+
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+      background: var(--glass-bg-strong);
+      border: 1px solid ${type === 'error' ? 'var(--color-danger)' : 'var(--glass-border)'};
+      border-radius: var(--radius-md);
+      padding: var(--sp-3) var(--sp-4);
+      color: var(--text-primary);
+      font-size: var(--text-sm);
+      font-family: sans-serif;
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      pointer-events: auto;
+      transform: translateX(120%);
+      transition: transform 300ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    `;
+
+    const icon = type === 'error' ? '❌' : 'ℹ️';
+    toast.innerHTML = `
+      <span>${icon}</span>
+      <span style="flex: 1; font-weight: 500; text-align: left;">${message}</span>
+    `;
+
+    toastContainer.appendChild(toast);
+
+    // Trigger slide-in
+    setTimeout(() => {
+      toast.style.transform = 'translateX(0)';
+    }, 10);
+
+    // Slide-out and remove
+    setTimeout(() => {
+      toast.style.transform = 'translateX(120%)';
+      setTimeout(() => {
+        toast.remove();
+      }, 300);
+    }, 4000);
+  }
 }
 
 // Bootstrap

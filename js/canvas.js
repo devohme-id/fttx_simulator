@@ -379,6 +379,25 @@ class CanvasManager {
   updateNodeProperties(id, newProps) {
     const node = this.nodes.get(id);
     if (node) {
+      // Revert safety gate: check if reducing splitter/ODP capacity conflicts with active connection count
+      if (newProps.ratio && (node.type === 'splitter' || node.type === 'odp')) {
+        const newRatioLimit = parseInt(newProps.ratio.split(':')[1]) || 8;
+        const currentConnections = this.connections.filter(c => c.sourceId === id).length;
+        if (currentConnections > newRatioLimit) {
+          if (window.app && typeof window.app.showToast === 'function') {
+            window.app.showToast(`Gagal merubah rasio: perangkat memiliki ${currentConnections} koneksi aktif, kapasitas baru hanya ${newRatioLimit}. Hapus beberapa koneksi terlebih dahulu.`, 'error');
+          } else {
+            alert(`Gagal merubah rasio: perangkat memiliki ${currentConnections} koneksi aktif, kapasitas baru hanya ${newRatioLimit}. Hapus beberapa koneksi terlebih dahulu.`);
+          }
+          // Revert the selector option in the open properties modal
+          const select = document.querySelector(`#properties-form select[data-key="ratio"]`);
+          if (select) {
+            select.value = node.properties.ratio;
+          }
+          return;
+        }
+      }
+
       node.properties = { ...node.properties, ...newProps };
       
       // Update label
@@ -513,6 +532,31 @@ class CanvasManager {
     // Prevent duplicate connection
     const exists = this.connections.find(c => c.sourceId === sourceId && c.targetId === targetId);
     if (exists) return false;
+
+    // Validate outgoing connection capacity limit
+    const sourceNode = this.getNode(sourceId);
+    if (!sourceNode) return false;
+
+    let maxConnections = 1; // Default for active lines, connectors, cables, SFP, OLT
+    if (sourceNode.type === 'splitter' || sourceNode.type === 'odp') {
+      const ratio = sourceNode.properties.ratio || '1:8';
+      maxConnections = parseInt(ratio.split(':')[1]) || 8;
+    }
+
+    const currentOutgoing = this.connections.filter(c => c.sourceId === sourceId).length;
+    if (currentOutgoing >= maxConnections) {
+      const sourceName = sourceNode.def.name;
+      const detailMsg = (sourceNode.type === 'splitter' || sourceNode.type === 'odp')
+        ? `kapasitas Splitter ${sourceNode.properties.ratio} (maks. ${maxConnections} koneksi)`
+        : `perangkat ${sourceName} hanya mendukung 1 koneksi keluar`;
+      
+      if (window.app && typeof window.app.showToast === 'function') {
+        window.app.showToast(`Koneksi ditolak: ${detailMsg}`, 'error');
+      } else {
+        alert(`Koneksi ditolak: ${detailMsg}`);
+      }
+      return false;
+    }
 
     // Check if target input is already connected (only 1 input allowed usually)
     const targetHasInput = this.connections.find(c => c.targetId === targetId);
