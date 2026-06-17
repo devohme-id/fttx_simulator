@@ -794,7 +794,21 @@ class FTTHSimulator {
     // Shift SVG connections (must run BEFORE stripping element IDs)
     const svgLayer = innerClone.querySelector('#connections-layer');
     if (svgLayer) {
-       svgLayer.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
+       // Explicitly set dimensions in pixels so percentages do not collapse during print
+       svgLayer.style.width = diagramWidth + 'px';
+       svgLayer.style.height = diagramHeight + 'px';
+       svgLayer.setAttribute('width', diagramWidth);
+       svgLayer.setAttribute('height', diagramHeight);
+       
+       // Wrap all paths inside a <g> group element to translate them cleanly
+       const gEl = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+       gEl.setAttribute('transform', `translate(${xOffset}, ${yOffset})`);
+       
+       // Move all children of the SVG into the group
+       while (svgLayer.firstChild) {
+         gEl.appendChild(svgLayer.firstChild);
+       }
+       svgLayer.appendChild(gEl);
     }
 
     // Strip ID attributes to prevent duplicate IDs in the document

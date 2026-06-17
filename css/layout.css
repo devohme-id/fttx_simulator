@@ -378,9 +378,17 @@
     border-color: #059669 !important;
   }
 
+  #print-diagram-container .connections-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: visible !important;
+  }
+
   /* Connection Lines */
   #print-diagram-container .connection-path {
     stroke-width: 2.5px !important;
+    fill: none !important;
   }
   
   #print-diagram-container .connection-path[data-signal="good"] { 
