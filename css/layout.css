@@ -105,6 +105,8 @@
   display: flex;
   align-items: center;
   gap: var(--sp-2);
+  flex-shrink: 0;
+  margin-left: var(--sp-4);
 }
 
 .zoom-controls input[type="range"] {
@@ -121,6 +123,7 @@
   white-space: nowrap;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  min-width: 0;
 }
 
 #status-bar-text::-webkit-scrollbar {

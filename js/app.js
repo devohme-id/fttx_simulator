@@ -318,7 +318,7 @@ class FTTHSimulator {
   updateNodeLEDs(results) {
     // Traverse all nodes on canvas
     this.canvasManager.getNodes().forEach(node => {
-      const el = document.getElementById(node.id);
+      const el = document.querySelector(`#canvas-inner #${node.id}`);
       if (!el) return;
 
       if (node.type === 'ont') {
@@ -747,6 +747,10 @@ class FTTHSimulator {
     diagramContainer.innerHTML = '';
     const innerClone = document.getElementById('canvas-inner').cloneNode(true);
     
+    // Strip ID attributes to prevent duplicate IDs in the document
+    innerClone.removeAttribute('id');
+    innerClone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+    
     // Clean up interactive elements
     innerClone.querySelectorAll('.eq-node-settings, .eq-node-info').forEach(el => el.remove());
     innerClone.querySelectorAll('.port').forEach(el => {
@@ -815,9 +819,19 @@ class FTTHSimulator {
     
     diagramContainer.appendChild(innerClone);
     
+    // Clean up print container after printing completes
+    const cleanup = () => {
+      diagramContainer.innerHTML = '';
+      tableContainer.innerHTML = '';
+    };
+
+    window.addEventListener('afterprint', cleanup, { once: true });
+    
     // Trigger print
     setTimeout(() => {
       window.print();
+      // Call cleanup directly in case afterprint doesn't trigger in some browsers
+      cleanup();
     }, 500); // 500ms to ensure DOM updates and images/styles are flushed
   }
 }

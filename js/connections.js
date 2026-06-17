@@ -162,9 +162,9 @@ class ConnectionManager {
 
         this.svgLayer.appendChild(hitbox);
         
-        // Add visual indicator class to ports
-        document.querySelector(`.port-output[data-node-id="${conn.sourceId}"]`)?.classList.add('connected');
-        document.querySelector(`.port-input[data-node-id="${conn.targetId}"]`)?.classList.add('connected');
+        // Add visual indicator class to ports in active canvas only
+        document.querySelector(`#canvas-inner .port-output[data-node-id="${conn.sourceId}"]`)?.classList.add('connected');
+        document.querySelector(`#canvas-inner .port-input[data-node-id="${conn.targetId}"]`)?.classList.add('connected');
       }
     });
     
@@ -191,7 +191,7 @@ class ConnectionManager {
   }
 
   _getPortPosition(nodeId, type) {
-    const nodeEl = document.getElementById(nodeId);
+    const nodeEl = document.querySelector(`#canvas-inner #${nodeId}`);
     if (!nodeEl) return null;
 
     const portClass = type === 'input' ? '.port-input' : '.port-output';

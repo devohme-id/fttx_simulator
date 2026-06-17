@@ -151,7 +151,7 @@ class DragDropManager {
 
     // Finalize existing node move
     if (this.movingNodeId) {
-      const el = document.getElementById(this.movingNodeId);
+      const el = document.querySelector(`#canvas-inner #${this.movingNodeId}`);
       if (el) el.classList.remove('dragging');
       this.movingNodeId = null;
     }

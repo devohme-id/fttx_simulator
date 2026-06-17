@@ -43,10 +43,13 @@ class CanvasManager {
     // Zooming via mouse wheel
     this.container.addEventListener('wheel', (e) => {
       e.preventDefault();
-      const delta = e.deltaY > 0 ? -0.1 : 0.1;
+      // Calculate a proportional, smooth zoom step based on wheel delta
+      let delta = -e.deltaY * 0.001;
+      // Clamp the delta to avoid aggressive sudden jumps
+      delta = Math.max(-0.15, Math.min(0.15, delta));
       this.zoom(delta, e.clientX, e.clientY);
       document.dispatchEvent(new CustomEvent('canvas:zoom'));
-    });
+    }, { passive: false });
 
     // Panning State using class properties
     // Deselect and Start Panning
@@ -134,14 +137,29 @@ class CanvasManager {
 
   zoom(delta, mouseX, mouseY) {
     const oldScale = this.scale;
-    this.scale = Math.max(0.3, Math.min(2, this.scale + delta));
+    const newScale = Math.max(0.3, Math.min(2, oldScale + delta));
+    if (newScale === oldScale) return;
+    
+    this.scale = newScale;
     
     const slider = document.getElementById('zoom-slider');
     const display = document.getElementById('zoom-value');
     if (slider) slider.value = this.scale;
     if (display) display.textContent = Math.round(this.scale * 100) + '%';
     
-    // Zoom towards center/mouse could be implemented here, but for simplicity:
+    // Zoom towards cursor location
+    if (mouseX !== undefined && mouseY !== undefined) {
+      const rect = this.container.getBoundingClientRect();
+      const mX = mouseX - rect.left;
+      const mY = mouseY - rect.top;
+      
+      const canvasX = (mX - this.panX) / oldScale;
+      const canvasY = (mY - this.panY) / oldScale;
+      
+      this.panX = mX - canvasX * newScale;
+      this.panY = mY - canvasY * newScale;
+    }
+    
     this._updateTransform();
   }
 
@@ -348,7 +366,7 @@ class CanvasManager {
     if (node) {
       node.x = x;
       node.y = y;
-      const el = document.getElementById(id);
+      const el = document.querySelector(`#canvas-inner #${id}`);
       if (el) {
         el.style.left = `${x}px`;
         el.style.top = `${y}px`;
@@ -364,7 +382,7 @@ class CanvasManager {
       node.properties = { ...node.properties, ...newProps };
       
       // Update label
-      const el = document.getElementById(id);
+      const el = document.querySelector(`#canvas-inner #${id}`);
       if (el) {
         const labelEl = el.querySelector('.js-node-label');
         if (labelEl) {
@@ -409,7 +427,7 @@ class CanvasManager {
         c => c.sourceId !== id && c.targetId !== id
       );
 
-      const el = document.getElementById(id);
+      const el = document.querySelector(`#canvas-inner #${id}`);
       if (el) {
         // Fade out animation before removing
         el.style.transition = 'opacity 200ms, transform 200ms';
@@ -432,14 +450,14 @@ class CanvasManager {
   selectNode(id) {
     // Deselect current
     if (this.selectedNodeId) {
-      const currentEl = document.getElementById(this.selectedNodeId);
+      const currentEl = document.querySelector(`#canvas-inner #${this.selectedNodeId}`);
       if (currentEl) currentEl.classList.remove('selected');
     }
 
     this.selectedNodeId = id;
 
     if (id) {
-      const el = document.getElementById(id);
+      const el = document.querySelector(`#canvas-inner #${id}`);
       if (el) el.classList.add('selected');
       
       // Deselect connection when selecting node
