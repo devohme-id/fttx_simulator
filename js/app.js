@@ -747,10 +747,6 @@ class FTTHSimulator {
     diagramContainer.innerHTML = '';
     const innerClone = document.getElementById('canvas-inner').cloneNode(true);
     
-    // Strip ID attributes to prevent duplicate IDs in the document
-    innerClone.removeAttribute('id');
-    innerClone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
-    
     // Clean up interactive elements
     innerClone.querySelectorAll('.eq-node-settings, .eq-node-info').forEach(el => el.remove());
     innerClone.querySelectorAll('.port').forEach(el => {
@@ -795,11 +791,15 @@ class FTTHSimulator {
        nodeEl.style.top = (curY + yOffset) + 'px';
     });
     
-    // Shift SVG connections
+    // Shift SVG connections (must run BEFORE stripping element IDs)
     const svgLayer = innerClone.querySelector('#connections-layer');
     if (svgLayer) {
        svgLayer.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
     }
+
+    // Strip ID attributes to prevent duplicate IDs in the document
+    innerClone.removeAttribute('id');
+    innerClone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
     
     // Scale container if it's too wide or too tall for a single A4 Landscape page
     // Usable page height is limited to keep the table on the same page.
