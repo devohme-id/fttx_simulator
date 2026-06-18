@@ -101,3 +101,16 @@
   border-style: solid;
   border-color: var(--glass-border) transparent transparent transparent;
 }
+
+.tooltip-status-svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  stroke-width: 2.5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}

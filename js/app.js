@@ -88,6 +88,17 @@ class FTTHSimulator {
       }
     });
 
+    // Horizontal scroll mouse wheel translation on status bar
+    const statusBarText = document.getElementById('status-bar-text');
+    if (statusBarText) {
+      statusBarText.addEventListener('wheel', (e) => {
+        if (e.deltaY !== 0) {
+          e.preventDefault();
+          statusBarText.scrollLeft += e.deltaY;
+        }
+      });
+    }
+
     // Global reset button
     document.getElementById('btn-reset')?.addEventListener('click', async () => {
       const confirmed = await this.showConfirm('Apakah Anda yakin ingin menghapus seluruh workspace?', 'Reset Workspace', 'danger');
@@ -271,41 +282,68 @@ class FTTHSimulator {
     if (counts.cable) eqParts.push(`Cable:${counts.cable}`);
     if (counts.connector) eqParts.push(`Conn:${counts.connector}`);
     if (counts.ont) eqParts.push(`ONT:${counts.ont}`);
-    parts.push(`<span class="sb-segment sb-topology"><span class="sb-icon">🔗</span> ${nodes.length} Devices, ${connCount} Links <span class="sb-dim">(${eqParts.join(' · ')})</span></span>`);
+    
+    parts.push(
+      `<span class="sb-segment sb-topology">` +
+      `<svg class="sb-icon-svg" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> ` +
+      `${nodes.length} Devices, ${connCount} Links <span class="sb-dim">(${eqParts.join(' · ')})</span>` +
+      `</span>`
+    );
 
     // Segment 2: Tx Power source
     if (txPower !== null) {
       const txSign = txPower >= 0 ? '+' : '';
-      parts.push(`<span class="sb-segment sb-tx"><span class="sb-icon">📡</span> Tx: <span class="sb-val text-accent">${txSign}${txPower.toFixed(1)} dBm</span></span>`);
+      parts.push(
+        `<span class="sb-segment sb-tx">` +
+        `<svg class="sb-icon-svg" viewBox="0 0 24 24"><path d="M2 16.1A5 5 0 0 1 5.9 20M2 12.05A9 9 0 0 1 9.95 20M2 8A14 14 0 0 1 14 20M2 20h.01"></path><circle cx="12" cy="8" r="3"></circle><path d="M12 11v9"></path><path d="M9 20h6"></path></svg> ` +
+        `Tx: <span class="sb-val text-accent">${txSign}${txPower.toFixed(1)} dBm</span>` +
+        `</span>`
+      );
     }
 
     // Segment 3: ONT results (per-ONT if multiple, single summary if one)
     if (ontSummaries.length === 0 && ontNodes.length === 0) {
-      parts.push(`<span class="sb-segment sb-hint"><span class="sb-icon">💡</span> <span class="text-muted">Tambahkan ONT untuk evaluasi link budget</span></span>`);
+      parts.push(
+        `<span class="sb-segment sb-hint">` +
+        `<svg class="sb-icon-svg" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A5 5 0 0 0 8 8c0 1 .3 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path><line x1="9" y1="18" x2="15" y2="18"></line><line x1="10" y1="22" x2="14" y2="22"></line></svg> ` +
+        `<span class="text-muted">Tambahkan ONT untuk evaluasi link budget</span>` +
+        `</span>`
+      );
     } else if (ontSummaries.length === 0 && ontNodes.length > 0) {
-      parts.push(`<span class="sb-segment sb-hint"><span class="sb-icon">⚠️</span> <span class="text-warning">ONT belum terhubung ke sumber sinyal</span></span>`);
+      parts.push(
+        `<span class="sb-segment sb-hint">` +
+        `<svg class="sb-icon-svg" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> ` +
+        `<span class="text-warning">ONT belum terhubung ke sumber sinyal</span>` +
+        `</span>`
+      );
     } else {
       ontSummaries.forEach((ont, idx) => {
         const lossSign = ont.totalLoss > 0 ? '-' : '';
         const rxSign = ont.rxPower >= 0 ? '+' : '';
         const marginSign = ont.margin >= 0 ? '+' : '';
 
-        let statusIcon, statusClass, statusLabel;
+        let statusIconSvg, statusClass, statusLabel;
         if (ont.status === 'critical') {
-          statusIcon = '❌'; statusClass = 'text-danger'; statusLabel = 'FAILED';
+          statusIconSvg = `<svg class="sb-badge-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+          statusClass = 'text-danger';
+          statusLabel = 'FAILED';
         } else if (ont.status === 'warning') {
-          statusIcon = '⚠️'; statusClass = 'text-warning'; statusLabel = 'MARGINAL';
+          statusIconSvg = `<svg class="sb-badge-svg" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+          statusClass = 'text-warning';
+          statusLabel = 'MARGINAL';
         } else {
-          statusIcon = '✅'; statusClass = 'text-success'; statusLabel = 'OK';
+          statusIconSvg = `<svg class="sb-badge-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+          statusClass = 'text-success';
+          statusLabel = 'OK';
         }
 
         const ontLabel = ontSummaries.length > 1 ? ` ONT-${idx + 1}:` : '';
         parts.push(
           `<span class="sb-segment sb-budget">` +
-          `<span class="sb-icon">📊</span>${ontLabel} ` +
+          `<svg class="sb-icon-svg" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>${ontLabel} ` +
           `Loss: <span class="sb-val text-warning">${lossSign}${ont.totalLoss.toFixed(2)} dB</span>` +
           ` → Rx: <span class="sb-val ${statusClass}">${rxSign}${ont.rxPower.toFixed(2)} dBm</span>` +
-          ` <span class="sb-badge ${statusClass}">${statusIcon} ${statusLabel}</span>` +
+          ` <span class="sb-badge ${statusClass}">${statusIconSvg} ${statusLabel}</span>` +
           ` <span class="sb-dim">(margin: ${marginSign}${ont.margin.toFixed(1)} dB)</span>` +
           `</span>`
         );

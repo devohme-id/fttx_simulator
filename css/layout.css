@@ -154,9 +154,30 @@
   letter-spacing: 0.01em;
 }
 
-.sb-icon {
-  font-size: 12px;
-  line-height: 1;
+.sb-icon-svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  stroke-width: 2.5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.sb-badge-svg {
+  width: 10px;
+  height: 10px;
+  stroke: currentColor;
+  stroke-width: 3px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
 }
 
 .sb-val {
@@ -170,6 +191,9 @@
 }
 
 .sb-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   font-weight: 700;
   font-size: 10px;
   text-transform: uppercase;
