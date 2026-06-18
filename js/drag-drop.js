@@ -15,8 +15,9 @@ class DragDropManager {
 
     // State for moving existing nodes
     this.movingNodeId = null;
-    this.moveOffsetX = 0;
-    this.moveOffsetY = 0;
+    this.dragStartX = 0;
+    this.dragStartY = 0;
+    this.initialNodePositions = null;
 
     this.initEvents();
   }
@@ -62,20 +63,34 @@ class DragDropManager {
   }
 
   _onNodePointerDown(e, nodeEl) {
-    // Only left click
     if (e.button !== 0) return;
     
-    this.movingNodeId = nodeEl.id;
-    
-    // Calculate offset from cursor to top-left of node
-    const rect = nodeEl.getBoundingClientRect();
-    const containerRect = this.container.getBoundingClientRect();
-    
-    // Account for canvas panning if applicable
-    this.moveOffsetX = e.clientX - rect.left;
-    this.moveOffsetY = e.clientY - rect.top;
+    const nodeId = nodeEl.id;
 
-    nodeEl.classList.add('dragging');
+    // Toggle or select if click happens
+    if (e.shiftKey) {
+      this.canvas.selectNode(nodeId, false, true); // toggle selection
+    } else {
+      if (!this.canvas.selectedNodeIds.has(nodeId)) {
+        this.canvas.selectNode(nodeId, false, false); // exclusive select
+      }
+    }
+
+    if (this.canvas.selectedNodeIds.has(nodeId)) {
+      this.movingNodeId = nodeId;
+      this.dragStartX = e.clientX;
+      this.dragStartY = e.clientY;
+      
+      this.initialNodePositions = new Map();
+      this.canvas.selectedNodeIds.forEach(id => {
+        const node = this.canvas.getNode(id);
+        if (node) {
+          this.initialNodePositions.set(id, { x: node.x, y: node.y });
+          const el = document.querySelector(`#canvas-inner #${id}`);
+          if (el) el.classList.add('dragging');
+        }
+      });
+    }
   }
 
   _onPointerMove(e) {
@@ -93,23 +108,25 @@ class DragDropManager {
       }
     }
 
-    // Handling existing node move
-    if (this.movingNodeId) {
-      const containerRect = this.container.getBoundingClientRect();
+    // Handling existing nodes move
+    if (this.movingNodeId && this.initialNodePositions) {
+      const screenDx = e.clientX - this.dragStartX;
+      const screenDy = e.clientY - this.dragStartY;
       
-      // Calculate new logical position relative to unscaled inner canvas
-      let screenNodeX = e.clientX - this.moveOffsetX;
-      let screenNodeY = e.clientY - this.moveOffsetY;
+      const logicalDx = screenDx / this.canvas.scale;
+      const logicalDy = screenDy / this.canvas.scale;
       
-      let newX = (screenNodeX - containerRect.left - this.canvas.panX) / this.canvas.scale;
-      let newY = (screenNodeY - containerRect.top - this.canvas.panY) / this.canvas.scale;
-      
-      // Optional: Grid snapping (e.g., snap to 20px grid)
       const snap = 20;
-      newX = Math.round(newX / snap) * snap;
-      newY = Math.round(newY / snap) * snap;
-
-      this.canvas.updateNodePosition(this.movingNodeId, newX, newY);
+      
+      this.initialNodePositions.forEach((startPos, id) => {
+        let newX = startPos.x + logicalDx;
+        let newY = startPos.y + logicalDy;
+        
+        newX = Math.round(newX / snap) * snap;
+        newY = Math.round(newY / snap) * snap;
+        
+        this.canvas.updateNodePosition(id, newX, newY);
+      });
     }
   }
 
@@ -151,8 +168,22 @@ class DragDropManager {
 
     // Finalize existing node move
     if (this.movingNodeId) {
-      const el = document.querySelector(`#canvas-inner #${this.movingNodeId}`);
-      if (el) el.classList.remove('dragging');
+      const screenDx = e.clientX - this.dragStartX;
+      const screenDy = e.clientY - this.dragStartY;
+      const dist = Math.sqrt(screenDx * screenDx + screenDy * screenDy);
+      
+      // If it was a simple click without drag, select exclusively
+      if (dist < 3 && !e.shiftKey) {
+        this.canvas.selectNode(this.movingNodeId, false, false);
+      }
+
+      if (this.initialNodePositions) {
+        this.initialNodePositions.forEach((_, id) => {
+          const el = document.querySelector(`#canvas-inner #${id}`);
+          if (el) el.classList.remove('dragging');
+        });
+        this.initialNodePositions = null;
+      }
       this.movingNodeId = null;
     }
   }

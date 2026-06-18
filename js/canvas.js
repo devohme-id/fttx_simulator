@@ -18,6 +18,7 @@ class CanvasManager {
     this.startY = 0;
     
     this.selectedNodeId = null;
+    this.selectedNodeIds = new Set();
     this.selectedConnection = null; // Store selected connection: {sourceId, targetId}
 
     this.initEvents();
@@ -51,29 +52,97 @@ class CanvasManager {
       document.dispatchEvent(new CustomEvent('canvas:zoom'));
     }, { passive: false });
 
-    // Panning State using class properties
-    // Deselect and Start Panning
+    // Deselect, Start Panning, or Start Marquee Selection
     this.container.addEventListener('mousedown', (e) => {
-      if (e.target === this.container || e.target.id === 'canvas-inner' || e.target.tagName === 'svg') {
-        if (this.selectedNodeId) {
-          this.selectNode(null);
-        }
-        if (this.selectedConnection) {
-          this.selectConnection(null);
-        }
+      if (e.target === this.container || e.target.id === 'canvas-inner' || e.target.tagName === 'svg' || e.target.classList.contains('connection-path') || e.target.classList.contains('connection-hitbox')) {
+        // Only left click
+        if (e.button !== 0) return;
+
+        const isConnection = e.target.classList.contains('connection-path') || e.target.classList.contains('connection-hitbox');
         
-        this.isPanning = true;
-        this.startX = e.clientX - this.panX;
-        this.startY = e.clientY - this.panY;
-        this.container.style.cursor = 'grabbing';
+        if (e.shiftKey) {
+          // Start marquee selection (Shift + drag)
+          e.preventDefault();
+          this.isSelecting = true;
+          
+          const containerRect = this.container.getBoundingClientRect();
+          this.selectStartX = e.clientX - containerRect.left;
+          this.selectStartY = e.clientY - containerRect.top;
+          
+          // Store initial selection state to merge with
+          this.preSelectedNodeIds = new Set(this.selectedNodeIds);
+          
+          // Create marquee DOM element
+          this.selectionBoxEl = document.createElement('div');
+          this.selectionBoxEl.className = 'selection-marquee';
+          this.selectionBoxEl.style.left = this.selectStartX + 'px';
+          this.selectionBoxEl.style.top = this.selectStartY + 'px';
+          this.selectionBoxEl.style.width = '0px';
+          this.selectionBoxEl.style.height = '0px';
+          this.container.appendChild(this.selectionBoxEl);
+        } else {
+          // Deselect everything unless clicking on a connection
+          if (!isConnection) {
+            this.selectNode(null);
+            this.selectConnection(null);
+          }
+          
+          // Start standard panning
+          this.isPanning = true;
+          this.startX = e.clientX - this.panX;
+          this.startY = e.clientY - this.panY;
+          this.container.style.cursor = 'grabbing';
+        }
       }
     });
 
     window.addEventListener('mousemove', (e) => {
-      if (!this.isPanning) return;
-      this.panX = e.clientX - this.startX;
-      this.panY = e.clientY - this.startY;
-      this._updateTransform();
+      if (this.isPanning) {
+        this.panX = e.clientX - this.startX;
+        this.panY = e.clientY - this.startY;
+        this._updateTransform();
+      } else if (this.isSelecting && this.selectionBoxEl) {
+        const containerRect = this.container.getBoundingClientRect();
+        const currentX = e.clientX - containerRect.left;
+        const currentY = e.clientY - containerRect.top;
+        
+        const x = Math.min(this.selectStartX, currentX);
+        const y = Math.min(this.selectStartY, currentY);
+        const width = Math.abs(this.selectStartX - currentX);
+        const height = Math.abs(this.selectStartY - currentY);
+        
+        this.selectionBoxEl.style.left = x + 'px';
+        this.selectionBoxEl.style.top = y + 'px';
+        this.selectionBoxEl.style.width = width + 'px';
+        this.selectionBoxEl.style.height = height + 'px';
+        
+        // Find overlapping nodes
+        const marqueeRect = this.selectionBoxEl.getBoundingClientRect();
+        const nodeEls = this.container.querySelectorAll('.eq-node');
+        
+        const currentSelected = new Set(this.preSelectedNodeIds);
+        nodeEls.forEach(nodeEl => {
+          const nodeRect = nodeEl.getBoundingClientRect();
+          const overlaps = !(marqueeRect.right < nodeRect.left || 
+                             marqueeRect.left > nodeRect.right || 
+                             marqueeRect.bottom < nodeRect.top || 
+                             marqueeRect.top > nodeRect.bottom);
+          const id = nodeEl.id;
+          if (overlaps) {
+            currentSelected.add(id);
+            nodeEl.classList.add('selected');
+          } else {
+            if (!this.preSelectedNodeIds.has(id)) {
+              currentSelected.delete(id);
+              nodeEl.classList.remove('selected');
+            } else {
+              nodeEl.classList.add('selected');
+            }
+          }
+        });
+        
+        this.selectedNodeIds = currentSelected;
+      }
     });
 
     window.addEventListener('mouseup', () => {
@@ -81,19 +150,52 @@ class CanvasManager {
         this.isPanning = false;
         this.container.style.cursor = ''; // Reset cursor
         document.dispatchEvent(new CustomEvent('canvas:panend'));
+      } else if (this.isSelecting) {
+        this.isSelecting = false;
+        if (this.selectionBoxEl) {
+          this.selectionBoxEl.remove();
+          this.selectionBoxEl = null;
+        }
+        
+        // Update selectedNodeId to be the last selected element to retain compatibility
+        const idsArray = Array.from(this.selectedNodeIds);
+        if (idsArray.length > 0) {
+          this.selectedNodeId = idsArray[idsArray.length - 1];
+          const lastNode = this.getNode(this.selectedNodeId);
+          if (lastNode) {
+            document.dispatchEvent(new CustomEvent('node:selected', { detail: { node: lastNode } }));
+          }
+        } else {
+          this.selectedNodeId = null;
+          document.dispatchEvent(new CustomEvent('node:deselected'));
+        }
       }
     });
     
     // Keyboard delete
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', async (e) => {
       if (e.key === 'Delete' || e.key === 'Backspace') {
         // Prevent deleting if typing in an input
         if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-          if (this.selectedNodeId) {
-            this.removeNode(this.selectedNodeId);
+          if (this.selectedNodeIds && this.selectedNodeIds.size > 0) {
+            const count = this.selectedNodeIds.size;
+            let confirmed = true;
+            if (count > 1) {
+              confirmed = await window.app.showConfirm(`Apakah Anda yakin ingin menghapus ${count} perangkat yang terpilih?`, 'Hapus Beberapa Perangkat', 'danger');
+            }
+            if (confirmed) {
+              const idsToDelete = Array.from(this.selectedNodeIds);
+              this.selectNode(null); // Deselect all
+              idsToDelete.forEach(id => {
+                this.removeNode(id);
+              });
+            }
           } else if (this.selectedConnection) {
-            this.removeConnection(this.selectedConnection.sourceId, this.selectedConnection.targetId);
-            this.selectConnection(null);
+            const confirmed = await window.app.showConfirm('Apakah Anda yakin ingin menghapus koneksi yang terpilih?', 'Hapus Koneksi', 'danger');
+            if (confirmed) {
+              this.removeConnection(this.selectedConnection.sourceId, this.selectedConnection.targetId);
+              this.selectConnection(null);
+            }
           }
         }
       }
@@ -320,7 +422,13 @@ class CanvasManager {
     el.addEventListener('mousedown', (e) => {
       // Don't select if clicking on a port, settings, info, or delete button
       if (!e.target.classList.contains('port') && !e.target.closest('.eq-node-settings') && !e.target.closest('.eq-node-info') && !e.target.closest('.eq-node-delete')) {
-        this.selectNode(nodeData.id);
+        if (e.shiftKey) {
+          this.selectNode(nodeData.id, false, true); // toggle selection
+        } else {
+          if (!this.selectedNodeIds.has(nodeData.id)) {
+            this.selectNode(nodeData.id, false, false); // exclusive select
+          }
+        }
       }
     });
 
@@ -455,6 +563,8 @@ class CanvasManager {
         setTimeout(() => el.remove(), 200);
       }
       
+      this.selectedNodeIds.delete(id);
+      
       if (this.selectedNodeId === id) {
         this.selectedNodeId = null;
         document.dispatchEvent(new CustomEvent('node:deselected'));
@@ -466,27 +576,60 @@ class CanvasManager {
     }
   }
 
-  selectNode(id) {
-    // Deselect current
-    if (this.selectedNodeId) {
-      const currentEl = document.querySelector(`#canvas-inner #${this.selectedNodeId}`);
-      if (currentEl) currentEl.classList.remove('selected');
+  selectNode(id, append = false, toggle = false) {
+    if (!id) {
+      // Deselect all
+      this.selectedNodeIds.forEach(selectedId => {
+        const nodeEl = document.querySelector(`#canvas-inner #${selectedId}`);
+        if (nodeEl) nodeEl.classList.remove('selected');
+      });
+      this.selectedNodeIds.clear();
+      this.selectedNodeId = null;
+      document.dispatchEvent(new CustomEvent('node:deselected'));
+      return;
     }
 
-    this.selectedNodeId = id;
-
-    if (id) {
+    if (toggle) {
+      if (this.selectedNodeIds.has(id)) {
+        this.selectedNodeIds.delete(id);
+        const el = document.querySelector(`#canvas-inner #${id}`);
+        if (el) el.classList.remove('selected');
+      } else {
+        this.selectedNodeIds.add(id);
+        const el = document.querySelector(`#canvas-inner #${id}`);
+        if (el) el.classList.add('selected');
+      }
+    } else if (append) {
+      this.selectedNodeIds.add(id);
       const el = document.querySelector(`#canvas-inner #${id}`);
       if (el) el.classList.add('selected');
+    } else {
+      // Clear previous selection
+      this.selectedNodeIds.forEach(selectedId => {
+        if (selectedId !== id) {
+          const nodeEl = document.querySelector(`#canvas-inner #${selectedId}`);
+          if (nodeEl) nodeEl.classList.remove('selected');
+        }
+      });
+      this.selectedNodeIds.clear();
+      this.selectedNodeIds.add(id);
+      const el = document.querySelector(`#canvas-inner #${id}`);
+      if (el) el.classList.add('selected');
+    }
+
+    // Update primary selectedNodeId
+    const idsArray = Array.from(this.selectedNodeIds);
+    if (idsArray.length > 0) {
+      this.selectedNodeId = idsArray[idsArray.length - 1];
+      const node = this.nodes.get(this.selectedNodeId);
       
-      // Deselect connection when selecting node
       if (this.selectedConnection) {
         this.selectConnection(null);
       }
       
-      const node = this.nodes.get(id);
       document.dispatchEvent(new CustomEvent('node:selected', { detail: { node } }));
     } else {
+      this.selectedNodeId = null;
       document.dispatchEvent(new CustomEvent('node:deselected'));
     }
   }

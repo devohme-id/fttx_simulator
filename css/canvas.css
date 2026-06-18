@@ -639,3 +639,12 @@
   border-color: #cbd5e1;
 }
 
+/* Selection Marquee */
+.selection-marquee {
+  position: absolute;
+  border: 1.5px dashed var(--accent-indigo);
+  background: rgba(99, 102, 241, 0.15);
+  pointer-events: none;
+  z-index: 90; /* on top of dragging nodes, below sidebars */
+}
+
