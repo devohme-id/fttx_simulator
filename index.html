@@ -222,20 +222,33 @@
               
               <div class="glossary-list">
                 <div class="glossary-item">
-                  <div class="glossary-term">🖱️ Navigasi Workspace (Pan & Zoom Dinamis)</div>
+                  <div class="glossary-term">Navigasi Workspace (Pan & Zoom Dinamis)</div>
                   <div class="glossary-definition">
                     - <b>Panning (Geser Kanvas)</b>: Klik dan tahan klik kiri mouse pada area kosong kanvas (atau garis grid latar belakang), lalu geser pointer mouse/trackpad Anda untuk berpindah tempat di area workspace tak terbatas secara leluasa.<br>
-                    - <b>Zooming (Skala Kanvas)</b>: Gunakan scroll roda mouse Anda (mouse wheel) di atas area kanvas, pinch-to-zoom pada trackpad, atau geser slider zoom di status bar bagian bawah untuk mengatur skala canvas (30% hingga 200%). Fokus perbesaran/perkecilan akan secara cerdas mengikuti posisi koordinat kursor mouse Anda.
+                    - <b>Zooming (Skala Kanvas)</b>: Gunakan scroll roda mouse Anda (mouse wheel) di atas area kanvas, pinch-to-zoom pada trackpad, atau geser slider zoom di status bar bagian bawah untuk mengatur skala canvas (30% hingga 200%). Fokus perbesaran/perkecilan akan secara cerdas mengikuti posisi koordinat kursor mouse Anda (zoom-to-pointer) dengan delta proporsional yang halus.
                   </div>
                 </div>
                 <div class="glossary-item">
-                  <div class="glossary-term">🎛️ Menu Aksi Melayang (Selected Actions Overlay)</div>
+                  <div class="glossary-term">Seleksi Multi-Perangkat & Pemindahan Grup</div>
                   <div class="glossary-definition">
-                    Untuk menjaga kerapian area kerja dan mencegah teks nama perangkat terpotong, tombol aksi <b>(Info, Pengaturan, Hapus)</b> disembunyikan secara default. Cukup klik sekali pada kartu perangkat untuk menyeleksinya, dan panel tombol aksi yang lebih besar (ukuran ideal tombol 24px dengan ikon SVG 14px) akan muncul meluncur ke atas dari bagian bawah tubuh perangkat (body) dengan efek animasi pegas (*spring scale-up bounce*) yang dinamis.
+                    Fitur seleksi ganda memungkinkan pemindahan banyak perangkat secara bersamaan:
+                    <ul style="margin-left: var(--sp-4); margin-top: var(--sp-1);">
+                      <li><b>Shift+Klik</b>: Tahan Shift lalu klik perangkat untuk menambah atau menghapusnya dari seleksi secara toggle (tanpa mengganggu seleksi perangkat lainnya).</li>
+                      <li><b>Shift+Drag (Kotak Seleksi Marquee)</b>: Tahan Shift lalu klik dan seret di area kosong kanvas untuk menampilkan kotak seleksi transparan bergaris putus-putus. Semua perangkat yang tertutup/overlap dengan kotak ini akan otomatis terseleksi.</li>
+                      <li><b>Pindah Grup</b>: Seret salah satu perangkat yang terseleksi untuk memindahkan seluruh grup bersamaan, menjaga posisi relatif dan alignment antar perangkat tetap presisi.</li>
+                      <li><b>Hapus Grup</b>: Tekan Delete/Backspace saat beberapa perangkat terseleksi. Dialog konfirmasi kustom akan muncul menyebutkan jumlah perangkat yang akan dihapus.</li>
+                      <li><b>Deseleksi</b>: Klik pada area kosong kanvas tanpa Shift untuk membatalkan seluruh seleksi.</li>
+                    </ul>
                   </div>
                 </div>
                 <div class="glossary-item">
-                  <div class="glossary-term">🚥 Casing Realistis & LED Status Aktif (Live Hardware Indicators)</div>
+                  <div class="glossary-term">Menu Aksi Melayang (Selected Actions Overlay)</div>
+                  <div class="glossary-definition">
+                    Untuk menjaga kerapian area kerja dan mencegah teks nama perangkat terpotong, tombol aksi <b>(Info, Pengaturan, Hapus)</b> disembunyikan secara default. Cukup klik sekali pada kartu perangkat untuk menyeleksinya, dan panel tombol aksi yang lebih besar (ukuran ideal tombol 24px dengan ikon SVG 14px) akan muncul meluncur ke atas dari bagian bawah tubuh perangkat (body) dengan efek animasi pegas (<i>spring scale-up bounce</i>) yang dinamis.
+                  </div>
+                </div>
+                <div class="glossary-item">
+                  <div class="glossary-term">Casing Realistis & LED Status Aktif (Live Hardware Indicators)</div>
                   <div class="glossary-definition">
                     Setiap perangkat dirancang menyerupai bentuk fisik perangkat aslinya:
                     <ul style="margin-left: var(--sp-4); margin-top: var(--sp-1);">
@@ -248,32 +261,45 @@
                   </div>
                 </div>
                 <div class="glossary-item">
-                  <div class="glossary-term">🔌 Port Fisik SC Adapter & Core Glow</div>
+                  <div class="glossary-term">Port Fisik SC Adapter & Core Glow</div>
                   <div class="glossary-definition">
                     Port koneksi digambarkan berbentuk kotak adapter persegi menyerupai socket SC fiber asli. Inti bagian dalam port (core) akan memancarkan cahaya hijau/teal terang jika kabel berhasil terhubung (port active). Adapter menggunakan standar warna standar industri: biru tebal di sisi kiri untuk port input <b>SC/UPC</b> (flange datar) dan hijau tebal di sisi kanan untuk port output <b>SC/APC</b> (flange miring) pada perangkat konektor.
                   </div>
                 </div>
                 <div class="glossary-item">
-                  <div class="glossary-term">🗑️ Fitur Hapus Perangkat & Koneksi (Dinamis & Aman)</div>
+                  <div class="glossary-term">Validasi Koneksi Port & Kapasitas Perangkat</div>
+                  <div class="glossary-definition">
+                    Sistem menerapkan aturan validasi kapasitas koneksi yang realistis berdasarkan tipe perangkat:
+                    <ul style="margin-left: var(--sp-4); margin-top: var(--sp-1);">
+                      <li><b>Splitter & ODP</b>: Jumlah koneksi keluar dibatasi sesuai rasio splitter yang dipilih (mis. 1:2 = maks. 2, 1:8 = maks. 8 koneksi keluar).</li>
+                      <li><b>OLT</b>: Bebas memasang banyak SFP Module — tidak ada batasan koneksi keluar (exception unik).</li>
+                      <li><b>Perangkat Lainnya</b> (SFP, Fiber Cable, Connector, ONT): Dibatasi maksimal 1 koneksi keluar per perangkat.</li>
+                      <li><b>Proteksi Rasio</b>: Merubah rasio Splitter/ODP ke kapasitas lebih kecil ditolak jika jumlah koneksi aktif melebihi batas baru; dropdown otomatis di-revert.</li>
+                    </ul>
+                    Pelanggaran validasi ditampilkan melalui notifikasi <b>toast</b> Glassmorphism yang meluncur dari pojok kanan atas layar.
+                  </div>
+                </div>
+                <div class="glossary-item">
+                  <div class="glossary-term">Fitur Hapus Perangkat & Koneksi (Dinamis & Aman)</div>
                   <div class="glossary-definition">
                     - <b>Hapus Perangkat (Equipment)</b>: Klik sekali pada kartu perangkat untuk menampilkan panel tombol aksi melayang di bagian bawah tubuh perangkat, lalu klik tombol tempat sampah merah <b>(Hapus)</b>, menekan tombol "Hapus Perangkat" di panel properties, atau tekan tombol <b>Delete/Backspace</b> di keyboard saat perangkat terseleksi. Dialog konfirmasi kustom Glassmorphism akan muncul terlebih dahulu.<br>
                     - <b>Hapus Koneksi (Kabel)</b>: Klik ganda (double-click) langsung pada garis koneksi untuk memutuskannya secara instan, atau klik sekali pada garis koneksi (hingga berwarna biru menyala) lalu tekan tombol <b>Delete/Backspace</b> di keyboard. Koneksi visual dan relasi daya logis akan langsung terputus, memicu kalkulasi ulang status redaman pada perangkat hilir tanpa perlu me-refresh halaman.
                   </div>
                 </div>
                 <div class="glossary-item">
-                  <div class="glossary-term">🧹 Reset Workspace Komprehensif</div>
+                  <div class="glossary-term">Reset Workspace Komprehensif</div>
                   <div class="glossary-definition">
-                    Gunakan tombol <b>Reset</b> di header menu atas untuk langsung menghapus seluruh perangkat dan jalur koneksi di kanvas. Fitur ini juga secara otomatis mengembalikan posisi koordinat geser (pan) ke koordinat awal (0, 0) dan mengembalikan tingkat perbesaran (zoom) ke skala normal 100% setelah dikonfirmasi via dialog popup konfirmasi kustom.
+                    Gunakan tombol <b>Reset</b> di header menu atas untuk langsung menghapus seluruh perangkat dan jalur koneksi di kanvas. Fitur ini juga secara otomatis mengembalikan posisi koordinat geser (pan) ke koordinat awal (0, 0), mengembalikan tingkat perbesaran (zoom) ke skala normal 100%, dan menghapus data <i>autosave</i> dari localStorage setelah dikonfirmasi via dialog popup konfirmasi kustom.
                   </div>
                 </div>
                 <div class="glossary-item">
-                  <div class="glossary-term">ℹ️ Lembar Rincian Kalkulasi Redaman (Loss Sheet Modal)</div>
+                  <div class="glossary-term">Lembar Rincian Kalkulasi Redaman (Loss Sheet Modal)</div>
                   <div class="glossary-definition">
                     Fitur tombol <b>(i) Informasi</b> di samping tombol properti Gear membuka lembar rincian kalkulasi matematika redaman. Ini merinci seluruh penyumbang redaman (seperti redaman kabel per kilometer, redaman splitter berdasarkan rasio pembagian daya, connector loss, dan splicing loss) secara komprehensif untuk mendidik dan membimbing pengguna.
                   </div>
                 </div>
                 <div class="glossary-item">
-                  <div class="glossary-term">⚡ Kalkulasi Redaman Real-Time & Threshold ONT</div>
+                  <div class="glossary-term">Kalkulasi Redaman Real-Time & Threshold ONT</div>
                   <div class="glossary-definition">
                     Setiap kali Anda menambah perangkat, menyambung kabel, atau merubah konfigurasi parameter, sistem langsung melakukan kalkulasi <i>propagation loss</i> dari OLT ke ONT. ONT akan mengevaluasi daya terima optik (Rx Power) terhadap ambang batas sensitivitasnya:
                     <ul style="margin-left: var(--sp-4); margin-top: var(--sp-1);">
@@ -284,15 +310,27 @@
                   </div>
                 </div>
                 <div class="glossary-item">
-                  <div class="glossary-term">🌓 Tema Light & Dark Mode Terintegrasi</div>
+                  <div class="glossary-term">Tema Light & Dark Mode Terintegrasi</div>
                   <div class="glossary-definition">
                     Ubah tema simulator secara instan menggunakan tombol matahari/bulan di pojok kanan atas. CSS Custom Variables secara mulus mengubah seluruh visual sistem termasuk bayangan grid kanvas, warna kartu perangkat, dan animasi dot konektor laser agar nyaman di mata dalam berbagai kondisi pencahayaan. Casing metalik perangkat beradaptasi dinamis mengikuti mode gelap/terang, kecuali modul SFP yang dirancang konsisten tetap silver/putih metalik. Kartu perangkat di sidebar menu juga otomatis mengikuti warna background/border tema yang aktif.
                   </div>
                 </div>
                 <div class="glossary-item">
-                  <div class="glossary-term">📄 Professional Landscape PDF Report</div>
+                  <div class="glossary-term">Professional Landscape PDF Report</div>
                   <div class="glossary-definition">
-                    Tombol <b>Export PDF</b> mengonversi kanvas topologi simulasi Anda menjadi cetakan laporan PDF A4 Landscape satu halaman. Laporan ini tertata secara profesional, menyajikan diagram jaringan beresolusi tinggi di bagian atas, legenda di tengah, serta tabel terperinci perhitungan link budget (Equipment Loss & Power Budget) di bagian bawah yang siap dipresentasikan.
+                    Tombol <b>Export PDF</b> (tombol utama berwarna teal di header) mengonversi kanvas topologi simulasi Anda menjadi cetakan laporan PDF A4 Landscape satu halaman. Laporan ini tertata secara profesional, menyajikan diagram jaringan (termasuk garis koneksi SVG) beresolusi tinggi di bagian atas, legenda warna sinyal di tengah, serta tabel terperinci perhitungan link budget (Equipment Loss & Power Budget) di bagian bawah yang siap dipresentasikan.
+                  </div>
+                </div>
+                <div class="glossary-item">
+                  <div class="glossary-term">Status Bar Interaktif & Ikon SVG</div>
+                  <div class="glossary-definition">
+                    Status bar di bagian bawah menampilkan ringkasan topologi (jumlah perangkat, koneksi, Tx Power, hasil link budget per ONT) menggunakan ikon SVG vektor tajam yang konsisten di semua platform. Status bar mendukung <b>scroll horizontal</b> menggunakan roda mouse (vertikal di-translate otomatis menjadi horizontal), sehingga seluruh informasi ONT dapat diakses meski terpotong oleh slider zoom di sisi kanan.
+                  </div>
+                </div>
+                <div class="glossary-item">
+                  <div class="glossary-term">Autosave & Autoload (localStorage)</div>
+                  <div class="glossary-definition">
+                    Seluruh state simulasi (posisi perangkat, koneksi, parameter konfigurasi, koordinat pan, dan tingkat zoom) otomatis tersimpan ke <b>localStorage</b> browser setiap kali Anda memindahkan perangkat, menambah/menghapus koneksi, mengubah properti, atau melakukan pan/zoom. Saat halaman dibuka kembali, topologi terakhir akan otomatis dimuat ulang secara penuh.
                   </div>
                 </div>
               </div>
@@ -328,6 +366,21 @@
                     <td>Klik sekali pada perangkat untuk menyeleksinya (border menyala, muncul menu aksi melayang)</td>
                   </tr>
                   <tr>
+                    <td>Multi-Seleksi (Toggle)</td>
+                    <td><b>Shift + Klik</b></td>
+                    <td>Tahan Shift lalu klik perangkat untuk menambah/menghapus dari seleksi grup</td>
+                  </tr>
+                  <tr>
+                    <td>Kotak Seleksi (Marquee)</td>
+                    <td><b>Shift + Drag</b> area kosong</td>
+                    <td>Tahan Shift lalu seret di area kosong untuk menampilkan kotak seleksi transparan; semua perangkat yang tertutup otomatis terseleksi</td>
+                  </tr>
+                  <tr>
+                    <td>Pindah Grup Perangkat</td>
+                    <td><b>Drag</b> perangkat terseleksi</td>
+                    <td>Seret salah satu perangkat dalam grup seleksi untuk memindahkan seluruh grup bersamaan</td>
+                  </tr>
+                  <tr>
                     <td>Buat Koneksi Kabel</td>
                     <td><b>Klik OUT → IN</b></td>
                     <td>Klik port OUT (hijau) lalu klik port IN (kuning) di perangkat tujuan</td>
@@ -335,7 +388,12 @@
                   <tr>
                     <td>Hapus Perangkat</td>
                     <td><b>Delete / Backspace</b></td>
-                    <td>Tekan saat perangkat terseleksi; atau klik ikon 🗑️ di panel aksi melayang di bagian bawah kartu</td>
+                    <td>Tekan saat perangkat terseleksi; atau klik ikon Hapus di panel aksi melayang di bagian bawah kartu</td>
+                  </tr>
+                  <tr>
+                    <td>Hapus Multi-Perangkat</td>
+                    <td><b>Delete / Backspace</b></td>
+                    <td>Tekan saat beberapa perangkat terseleksi; dialog konfirmasi muncul menyebutkan jumlah perangkat</td>
                   </tr>
                   <tr>
                     <td>Hapus Koneksi</td>
@@ -355,37 +413,42 @@
                   <tr>
                     <td>Zoom In / Out</td>
                     <td><b>Scroll Wheel</b></td>
-                    <td>Gulir roda mouse ke atas (zoom in) atau ke bawah (zoom out)</td>
+                    <td>Gulir roda mouse ke atas (zoom in) atau ke bawah (zoom out); zoom mengikuti posisi kursor</td>
+                  </tr>
+                  <tr>
+                    <td>Scroll Status Bar</td>
+                    <td><b>Scroll Wheel</b> di status bar</td>
+                    <td>Gulir roda mouse (vertikal) di atas status bar akan otomatis di-translate menjadi scroll horizontal</td>
                   </tr>
                   <tr>
                     <td>Buka Properties</td>
-                    <td>Klik <b>Gear ⚙️</b> / <b>Double-Click</b></td>
+                    <td>Klik <b>Gear</b> / <b>Double-Click</b></td>
                     <td>Klik ikon Gear pada panel aksi melayang di bawah kartu saat terpilih; atau klik ganda langsung pada kartu</td>
                   </tr>
                   <tr>
                     <td>Lihat Detail Redaman</td>
-                    <td>Klik ikon <b>ℹ️ Info</b></td>
+                    <td>Klik ikon <b>Info</b></td>
                     <td>Klik ikon Info pada panel aksi melayang di bawah kartu saat terpilih untuk membuka Loss Sheet</td>
                   </tr>
                   <tr>
                     <td>Lihat Tooltip Cepat</td>
                     <td><b>Hover</b> perangkat</td>
-                    <td>Arahkan kursor untuk melihat ringkasan daya & redaman (auto tooltip)</td>
+                    <td>Arahkan kursor untuk melihat ringkasan daya & redaman (auto tooltip dengan ikon SVG)</td>
                   </tr>
                   <tr>
                     <td>Ganti Tema</td>
-                    <td>Klik ikon <b>🌓</b></td>
+                    <td>Klik ikon <b>Tema</b> (bulan/matahari)</td>
                     <td>Toggle antara mode Light dan Dark secara instan</td>
                   </tr>
                   <tr>
                     <td>Reset Seluruh Kanvas</td>
                     <td>Klik tombol <b>Reset</b></td>
-                    <td>Hapus semua perangkat, koneksi, reset pan & zoom ke default</td>
+                    <td>Hapus semua perangkat, koneksi, data autosave, reset pan & zoom ke default</td>
                   </tr>
                   <tr>
                     <td>Export PDF</td>
                     <td>Klik tombol <b>Export PDF</b></td>
-                    <td>Unduh blueprint & tabel redaman dalam format A4 Landscape</td>
+                    <td>Unduh blueprint diagram (dengan garis koneksi SVG) & tabel redaman dalam format A4 Landscape</td>
                   </tr>
                 </tbody>
               </table>
@@ -519,28 +582,28 @@
               
               <div class="glossary-list">
                 <div class="glossary-item">
-                  <div class="glossary-term">🏗️ Arsitektur Sistem</div>
+                  <div class="glossary-term">Arsitektur Sistem</div>
                   <div class="glossary-definition">
                     Aplikasi ini berjalan sepenuhnya di sisi klien (client-side) tanpa memerlukan server backend atau database. Seluruh logika kalkulasi redaman, rendering koneksi SVG, dan interaksi kanvas ditangani langsung oleh browser menggunakan modul JavaScript terpisah:
                     <ul style="margin-left: var(--sp-4); margin-top: var(--sp-1);">
-                      <li><b>equipment-data.js</b> — Definisi parameter perangkat FTTH</li>
-                      <li><b>calculator.js</b> — Engine kalkulasi redaman & power budget</li>
-                      <li><b>canvas.js</b> — Pan, zoom, dan manajemen kanvas workspace</li>
-                      <li><b>connections.js</b> — Rendering koneksi SVG & animasi laser dot</li>
-                      <li><b>drag-drop.js</b> — Drag-and-drop perangkat dari panel ke kanvas</li>
-                      <li><b>tooltip.js</b> — Tooltip otomatis saat hover perangkat</li>
-                      <li><b>app.js</b> — Orkestrator utama, modal, tema, dan event binding</li>
+                      <li><b>equipment-data.js</b> — Definisi parameter perangkat FTTH (source-of-truth)</li>
+                      <li><b>calculator.js</b> — Engine kalkulasi redaman & power budget (recursive tree traversal)</li>
+                      <li><b>canvas.js</b> — Pan, zoom, seleksi multi-node, marquee, dan manajemen kanvas workspace</li>
+                      <li><b>connections.js</b> — Rendering koneksi SVG Bezier & animasi laser dot</li>
+                      <li><b>drag-drop.js</b> — Drag-and-drop dari palette ke kanvas & pemindahan grup perangkat</li>
+                      <li><b>tooltip.js</b> — Tooltip otomatis saat hover perangkat (ikon SVG vektor)</li>
+                      <li><b>app.js</b> — Orkestrator utama, modal, tema, autosave/autoload, export PDF, toast, dan event binding</li>
                     </ul>
                   </div>
                 </div>
                 <div class="glossary-item">
-                  <div class="glossary-term">🎨 Desain & UI/UX</div>
+                  <div class="glossary-term">Desain & UI/UX</div>
                   <div class="glossary-definition">
-                    Antarmuka menggunakan pendekatan <b>Glassmorphism</b> modern dengan efek kaca transparan (backdrop-filter), CSS Custom Properties (variabel warna), transisi halus, dan mode gelap/terang terintegrasi. Grid kanvas menampilkan pola dot-grid yang adaptif terhadap tema aktif.
+                    Antarmuka menggunakan pendekatan <b>Glassmorphism</b> modern dengan efek kaca transparan (backdrop-filter), CSS Custom Properties (variabel warna), transisi halus, dan mode gelap/terang terintegrasi. Grid kanvas menampilkan pola dot-grid yang adaptif terhadap tema aktif. Seluruh ikon menggunakan SVG vektor inline (tidak ada emoji) untuk konsistensi rendering di semua platform dan resolusi. Header menu di-organisir dengan divider visual dan tombol utama (Export PDF) berwarna teal sebagai Call-to-Action primer.
                   </div>
                 </div>
                 <div class="glossary-item">
-                  <div class="glossary-term">📐 Standar Referensi</div>
+                  <div class="glossary-term">Standar Referensi</div>
                   <div class="glossary-definition">
                     Seluruh parameter redaman dan kalkulasi mengacu pada standar industri telekomunikasi internasional:
                     <ul style="margin-left: var(--sp-4); margin-top: var(--sp-1);">
@@ -551,9 +614,9 @@
                   </div>
                 </div>
                 <div class="glossary-item">
-                  <div class="glossary-term">🔒 Privasi & Keamanan</div>
+                  <div class="glossary-term">Penyimpanan & Privasi</div>
                   <div class="glossary-definition">
-                    Tidak ada data yang dikirim ke server manapun. Seluruh simulasi berjalan secara lokal di perangkat browser Anda. Data topologi tidak disimpan secara permanen — saat halaman ditutup atau di-refresh, kanvas akan kembali kosong.
+                    Tidak ada data yang dikirim ke server manapun. Seluruh simulasi berjalan secara lokal di perangkat browser Anda. Data topologi (posisi perangkat, koneksi, parameter, zoom, dan pan) disimpan secara otomatis di <b>localStorage</b> browser dan dimuat kembali saat halaman dibuka ulang. Anda dapat menghapus seluruh data tersimpan menggunakan tombol <b>Reset</b> di header.
                   </div>
                 </div>
               </div>
