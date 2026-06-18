@@ -103,8 +103,13 @@
 }
 
 .eq-node.selected {
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 0 1px var(--accent-blue), var(--shadow-lg), var(--shadow-glow-sm);
+  border-color: var(--accent-blue) !important;
+  box-shadow: 0 0 0 2px var(--accent-blue), var(--shadow-lg), var(--shadow-glow-sm) !important;
+}
+
+.eq-node.dragging {
+  opacity: 0.85;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4), 0 0 15px var(--accent-indigo) !important;
 }
 
 /* ---------- Realistic Equipment Casing Overrides ---------- */
